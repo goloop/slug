@@ -22,3 +22,8 @@ func Make(t string) string {
 func Lower(t string) string {
 	return strings.ToLower(Make(t))
 }
+
+// Upper returns slug in uppercase.
+func Upper(t string) string {
+	return strings.ToUpper(Make(t))
+}

@@ -3,7 +3,7 @@
 
 [![Go Report Card](https://goreportcard.com/badge/github.com/goloop/slug)](https://goreportcard.com/report/github.com/goloop/slug) [![License](https://img.shields.io/badge/license-BSD-blue)](https://github.com/goloop/slug/blob/master/LICENSE) [![License](https://img.shields.io/badge/godoc-YES-green)](https://godoc.org/github.com/goloop/slug)
 
-*Version: v0.0.1-alpha*
+*Version: v0.0.2*
 
 # slug
 
@@ -43,7 +43,7 @@ func main() {
 	fmt.Printf("%s%s\n", h, s)
 
 	// Output:
-	//      hello-shi-jie
+	//      https://example.com/Hello-Shi-Jie
 }
 ```
 
@@ -60,6 +60,12 @@ Lower returns slug in lowercase.
     func Make(t string) string
 
 Make returns slug from string.
+
+#### func  Upper
+
+    func Upper(t string) string
+
+Upper returns slug in uppercase.
 
 #### func  Version
 
@@ -98,3 +104,9 @@ Lower returns slug in lowercase.
     func (s *Slug) Make(t string) string
 
 Make returns slug from string.
+
+#### func (*Slug) Upper
+
+    func (s *Slug) Upper(t string) string
+
+Upper returns slug in uppercase.
