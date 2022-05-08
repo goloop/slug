@@ -1,25 +1,8 @@
 package slug
 
 import (
-	"strings"
 	"testing"
 )
-
-// TestVersion tests the package version.
-// Note: each time you change the major version, you need to fix the tests.
-func TestVersion(t *testing.T) {
-	var expected = "v0." // change it for major version
-
-	version := Version()
-	if strings.HasPrefix(version, expected) != true {
-		t.Error("incorrect version")
-	}
-
-	if len(strings.Split(version, ".")) != 3 {
-		t.Error("version format should be as " +
-			"v{major_version}.{minor_version}.{patch_version}")
-	}
-}
 
 // TestMake tests Make function.
 func TestMake(t *testing.T) {
@@ -48,23 +31,29 @@ func TestMake(t *testing.T) {
 // TestLower tests Lower function.
 func TestLower(t *testing.T) {
 	var tests = []struct {
-		value    string
-		expected string
+		value         string
+		lowerExpected string
+		upperExpected string
 	}{
 		{
 			"Starlink Ілона Маска відкриє офіс в Україні",
 			"starlink-ilona-maska-vidkriie-ofis-v-ukrayini",
+			"STARLINK-ILONA-MASKA-VIDKRIIE-OFIS-V-UKRAYINI",
 		},
-		{"Hellö Wörld", "hello-world"},
-		{"你好世界", "ni-hao-shi-jie"},
-		{"[^你好世界$]", "ni-hao-shi-jie"},
-		{"This & that", "this-and-that"},
-		{"\tHellö \t Wörld\n ", "hello-world"},
+		{"Hellö Wörld", "hello-world", "HELLO-WORLD"},
+		{"你好世界", "ni-hao-shi-jie", "NI-HAO-SHI-JIE"},
+		{"[^你好世界$]", "ni-hao-shi-jie", "NI-HAO-SHI-JIE"},
+		{"This & that", "this-and-that", "THIS-AND-THAT"},
+		{"\tHellö \t Wörld\n ", "hello-world", "HELLO-WORLD"},
 	}
 
 	for _, test := range tests {
-		if v := Lower(test.value); v != test.expected {
-			t.Errorf("expected %s but %s", test.expected, v)
+		if v := Lower(test.value); v != test.lowerExpected {
+			t.Errorf("expected %s but %s", test.lowerExpected, v)
+		}
+
+		if v := Upper(test.value); v != test.upperExpected {
+			t.Errorf("expected %s but %s", test.upperExpected, v)
 		}
 	}
 }

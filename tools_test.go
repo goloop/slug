@@ -27,6 +27,18 @@ func TestSlugRules(t *testing.T) {
 			ok:    true,
 		},
 		{
+			item:  lang.TransState{Curr: '#', Value: "#"},
+			value: "sharp",
+			seek:  0,
+			ok:    true,
+		},
+		{
+			item:  lang.TransState{Curr: '%', Value: "%"},
+			value: "pct",
+			seek:  0,
+			ok:    true,
+		},
+		{
 			item:  lang.TransState{Curr: 'i', Value: "i"},
 			value: "i",
 			seek:  0,

@@ -6,39 +6,40 @@ import (
 	"github.com/goloop/t13n/lang"
 )
 
-// The slugRules sets additional transliteration rules
+// The slugRules sets custom transliteration rules
 // for the github.com/goloop/t13n module.
 func slugRules(ts lang.TransState) (string, int, bool) {
-	var lib = map[string]string{
-		" ":  "-",
-		"~":  "-",
-		"_":  "-",
-		"\t": "-",
-		"\n": "-",
-		"@":  "at",
-		"&":  "and",
-		"#":  "harp",
-		"%":  "percentage",
+	// Ignore ranges.
+	// Important: edit maps ascending order only!
+	var ignored = [][]int{
+		{0, 47},
+		{58, 64},
+		{91, 96},
+		{123, 141},
+		{143, 152},
+		{155, 155},
 	}
 
-	if v, ok := lib[ts.Value]; ok {
-		ts.Value = v
-	} else {
-		var ignore = [][]int{
-			{0, 47},
-			{58, 64},
-			{91, 96},
-			{123, 141},
-			{143, 152},
-			{155, 155},
-		}
-
+	switch ts.Value {
+	case " ", "~", "_", "\t", "\n":
+		ts.Value = "-"
+	case "@":
+		ts.Value = "at"
+	case "&":
+		ts.Value = "and"
+	case "#":
+		ts.Value = "sharp"
+	case "%":
+		ts.Value = "pct"
+	default:
 		id := int(ts.Curr)
-		for _, d := range ignore {
+		for _, d := range ignored {
+			// If the item isn't in the following ranges.
 			if id < d[0] {
 				break
 			}
 
+			// If the item is in the current range.
 			if id >= d[0] && id <= d[1] {
 				ts.Value = ""
 				break
