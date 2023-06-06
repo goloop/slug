@@ -1,5 +1,5 @@
 module github.com/goloop/slug
 
-go 1.17
+go 1.20
 
-require github.com/goloop/t13n v1.2.1
+require github.com/goloop/t13n v1.4.0

@@ -8,7 +8,7 @@ import (
 
 // TestSlugRules tests slugRules function.
 func TestSlugRules(t *testing.T) {
-	var tests = []struct {
+	tests := []struct {
 		item  lang.TransState
 		value string
 		seek  int

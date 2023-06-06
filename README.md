@@ -1,9 +1,5 @@
-[//]: # (!!!Don't modify the README.md, use `make readme` to generate it!!!)
+[![Go Report Card](https://goreportcard.com/badge/github.com/goloop/slug)](https://goreportcard.com/report/github.com/goloop/slug) [![License](https://img.shields.io/badge/license-MIT-brightgreen)](https://github.com/goloop/slug/blob/master/LICENSE) [![License](https://img.shields.io/badge/godoc-YES-green)](https://godoc.org/github.com/goloop/slug)
 
-
-[![Go Report Card](https://goreportcard.com/badge/github.com/goloop/slug)](https://goreportcard.com/report/github.com/goloop/slug) [![License](https://img.shields.io/badge/license-BSD-blue)](https://github.com/goloop/slug/blob/master/LICENSE) [![License](https://img.shields.io/badge/godoc-YES-green)](https://godoc.org/github.com/goloop/slug)
-
-*Version: v0.0.2*
 
 # slug
 
@@ -15,7 +11,9 @@ multiple languages support.
 
 To install this module use `go get` as:
 
-    $ go get -u github.com/goloop/slug
+```
+$ go get -u github.com/goloop/slug
+```
 
 ## Quick Start
 
@@ -40,73 +38,49 @@ func main() {
 	// Simple generate slug from the string.
 	s := slug.Make("Hello 世界")
 	h := "https://example.com/"
-	fmt.Printf("%s%s\n", h, s)
 
-	// Output:
-	//      https://example.com/Hello-Shi-Jie
+	fmt.Printf("%s%s\n", h, s)
+	// Output: https://example.com/Hello-Shi-Jie
 }
 ```
 
-## Usage
+## Functions
 
-#### func  Lower
+- **Lower**(t string) string
 
-    func Lower(t string) string
+  Lower returns slug in lowercase.
 
-Lower returns slug in lowercase.
+- **Make**(t string) string
 
-#### func  Make
+  Make returns slug from string.
 
-    func Make(t string) string
+- **Upper**(t string) string
 
-Make returns slug from string.
+  Upper returns slug in uppercase.
 
-#### func  Upper
+- **Version**() string
 
-    func Upper(t string) string
+  Version returns the version of the module.
 
-Upper returns slug in uppercase.
+- **New*() *Slug
 
-#### func  Version
-
-    func Version() string
-
-Version returns the version of the module.
-
-#### type Slug
-
-    type Slug struct {
-    }
+  New returns pointer to Slug.
 
 
-Slug is the slug constructor.
+## Methods of Slug
 
-#### func  New
+- **Lang**(l string) *Slug
 
-    func New() *Slug
+  Lang sets the type of language features to use during slugify.
 
-New retursn pointer to Slug.
+- **Lower**(t string) string
 
-#### func (*Slug) Lang
+  Lower returns slug in lowercase.
 
-    func (s *Slug) Lang(l string) *Slug
+- **Make**(t string) string
 
-Lang sets the type of language features to use during slugify.
+  Make returns slug from string.
 
-#### func (*Slug) Lower
+- **Upper**(t string) string
 
-    func (s *Slug) Lower(t string) string
-
-Lower returns slug in lowercase.
-
-#### func (*Slug) Make
-
-    func (s *Slug) Make(t string) string
-
-Make returns slug from string.
-
-#### func (*Slug) Upper
-
-    func (s *Slug) Upper(t string) string
-
-Upper returns slug in uppercase.
+  Upper returns slug in uppercase.

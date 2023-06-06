@@ -8,7 +8,7 @@ import (
 
 // TestObjMake tests Make method.
 func TestObjMake(t *testing.T) {
-	var tests = []struct {
+	tests := []struct {
 		value    string
 		expected string
 	}{
@@ -34,7 +34,7 @@ func TestObjMake(t *testing.T) {
 
 // TestObjLower tests Lower method.
 func TestObjLower(t *testing.T) {
-	var tests = []struct {
+	tests := []struct {
 		value         string
 		lowerExpected string
 		upperExpected string

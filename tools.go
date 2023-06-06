@@ -11,7 +11,7 @@ import (
 func slugRules(ts lang.TransState) (string, int, bool) {
 	// Ignore ranges.
 	// Important: edit maps ascending order only!
-	var ignored = [][]int{
+	ignored := [][]int{
 		{0, 47},
 		{58, 64},
 		{91, 96},

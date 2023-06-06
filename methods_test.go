@@ -6,7 +6,7 @@ import (
 
 // TestMake tests Make function.
 func TestMake(t *testing.T) {
-	var tests = []struct {
+	tests := []struct {
 		value    string
 		expected string
 	}{
@@ -30,7 +30,7 @@ func TestMake(t *testing.T) {
 
 // TestLower tests Lower function.
 func TestLower(t *testing.T) {
-	var tests = []struct {
+	tests := []struct {
 		value         string
 		lowerExpected string
 		upperExpected string
