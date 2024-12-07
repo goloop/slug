@@ -7,6 +7,10 @@ import (
 const (
 	// None to ignore any language rules.
 	None = lang.None
+	// GB is British English language.
+	GB = lang.GB
+	// US is American English language.
+	US = lang.US
 	// BG is Bulgarian language.
 	BG = lang.BG
 	// HR is Croatian language.

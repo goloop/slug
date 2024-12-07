@@ -1,4 +1,2 @@
-github.com/goloop/t13n v1.3.2 h1:enhFPS4rZvp77ai6cbJg2zvsxFC0ZVlT34xsUPdmW7g=
-github.com/goloop/t13n v1.3.2/go.mod h1:JCd2qLplmTZHTFq9K8PoW7UVghN1KCTFS8qMBh0nhfY=
-github.com/goloop/t13n v1.4.0 h1:HFlP1sExMzaoZBgchycHaHxeVt61Qfp3t4dt7E3pYc8=
-github.com/goloop/t13n v1.4.0/go.mod h1:JCd2qLplmTZHTFq9K8PoW7UVghN1KCTFS8qMBh0nhfY=
+github.com/goloop/t13n v1.4.1 h1:y7tXGc7MaNKfk3gRhOK7ezOlsaAXLF4oDhwH9+jiwfs=
+github.com/goloop/t13n v1.4.1/go.mod h1:JCd2qLplmTZHTFq9K8PoW7UVghN1KCTFS8qMBh0nhfY=
