@@ -3,21 +3,46 @@
 
 # slug
 
-Package slug generate slug from Unicode string, URL-friendly slugify with
-multiple languages support.
+Package slug generates URL-friendly slugs from Unicode strings with support for multiple languages. It provides both simple functions and a more configurable object-oriented approach.
 
+## Features
+
+- Clean, URL-safe slug generation.
+- Multi-language support through transliteration [t13n](https://github.com/goloop/t13n).
+- Customizable character replacement.
+- Thread-safe operations.
+- High performance.
+- No external dependencies for core functionality.
 
 ## Installation
 
-To install this module use `go get` as:
-
-```
-$ go get -u github.com/goloop/slug
+```bash
+go get -u github.com/goloop/slug
 ```
 
 ## Quick Start
 
 To use this module import it as: `github.com/goloop/slug`
+
+```go
+package main
+
+import (
+    "fmt"
+    "github.com/goloop/slug"
+)
+
+func main() {
+    // Simple usage
+    fmt.Println(slug.Make("Hello 世界"))
+    // Output: Hello-Shi-Jie
+
+    // With language-specific settings
+    s := slug.New()
+    fmt.Println(s.Lang("uk").Make("Привіт Світ"))
+    // Output: Pryvit-Svit
+}
+```
 
 ### Conversion functions
 
@@ -44,43 +69,26 @@ func main() {
 }
 ```
 
-## Functions
+## API Reference
 
-- **Lower**(t string) string
+### Functions
 
-  Lower returns slug in lowercase.
+- `Make(t string) string` - Generate a slug from a string.
+- `Lower(t string) string` - Generate a lowercase slug.
+- `Upper(t string) string` - Generate an uppercase slug.
+- `New() *Slug` - Create a new Slug instance for advanced configuration.
 
-- **Make**(t string) string
+### Slug Methods
 
-  Make returns slug from string.
+- `Lang(l string) *Slug` - Set language for transliteration.
+- `Make(t string) string` - Generate a slug.
+- `Lower(t string) string` - Generate a lowercase slug.
+- `Upper(t string) string` - Generate an uppercase slug.
 
-- **Upper**(t string) string
+## Contributing
 
-  Upper returns slug in uppercase.
+Contributions are welcome! Please feel free to submit a Pull Request.
 
-- **Version**() string
+## License
 
-  Version returns the version of the module.
-
-- **New*() *Slug
-
-  New returns pointer to Slug.
-
-
-## Methods of Slug
-
-- **Lang**(l string) *Slug
-
-  Lang sets the type of language features to use during slugify.
-
-- **Lower**(t string) string
-
-  Lower returns slug in lowercase.
-
-- **Make**(t string) string
-
-  Make returns slug from string.
-
-- **Upper**(t string) string
-
-  Upper returns slug in uppercase.
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.

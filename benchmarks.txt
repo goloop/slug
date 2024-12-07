@@ -1,0 +1,15 @@
+goos: linux
+goarch: arm64
+pkg: github.com/goloop/slug
+BenchmarkMake-6           	  129292	      9229 ns/op	    1728 B/op	      43 allocs/op
+BenchmarkLower-6          	  127030	      9287 ns/op	    1778 B/op	      44 allocs/op
+BenchmarkUpper-6          	  120852	      9382 ns/op	    1780 B/op	      44 allocs/op
+BenchmarkSlugMake-6       	  127002	      9109 ns/op	    1725 B/op	      43 allocs/op
+BenchmarkSlugLower-6      	  120470	      9317 ns/op	    1779 B/op	      44 allocs/op
+BenchmarkSlugUpper-6      	  124306	      9560 ns/op	    1778 B/op	      44 allocs/op
+BenchmarkSlugWithLang/Lang_uk-6         	   61090	     19841 ns/op	   14868 B/op	      74 allocs/op
+BenchmarkSlugWithLang/Lang_en-6         	  127244	      9131 ns/op	    1728 B/op	      43 allocs/op
+BenchmarkSlugWithLang/Lang_de-6         	  123758	      9530 ns/op	    1731 B/op	      43 allocs/op
+BenchmarkSlugWithLang/Lang_fr-6         	  130749	      9159 ns/op	    1732 B/op	      43 allocs/op
+PASS
+ok  	github.com/goloop/slug	12.818s
