@@ -1,7 +1,7 @@
 package lang
 
 import (
-	"github.com/goloop/t13n/lang"
+	"github.com/goloop/t13n/v2/lang"
 )
 
 const (

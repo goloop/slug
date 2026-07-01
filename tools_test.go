@@ -3,7 +3,7 @@ package slug
 import (
 	"testing"
 
-	"github.com/goloop/t13n/lang"
+	"github.com/goloop/t13n/v2/lang"
 )
 
 // TestSlugRules checks the per-rune transliteration callback in isolation:

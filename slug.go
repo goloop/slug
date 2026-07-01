@@ -4,7 +4,7 @@ import (
 	"strings"
 
 	"github.com/goloop/slug/v2/lang"
-	"github.com/goloop/t13n"
+	"github.com/goloop/t13n/v2"
 )
 
 // Slug generates URL-friendly slugs according to its configuration.

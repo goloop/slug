@@ -3,7 +3,7 @@ package lang
 import (
 	"testing"
 
-	t13n "github.com/goloop/t13n/lang"
+	t13n "github.com/goloop/t13n/v2/lang"
 )
 
 // TestReexport guards that the language codes re-exported here still point at

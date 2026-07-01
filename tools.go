@@ -4,7 +4,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/goloop/t13n/lang"
+	"github.com/goloop/t13n/v2/lang"
 )
 
 // Word replacements for symbols that carry meaning. They are surrounded by
