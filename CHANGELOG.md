@@ -22,6 +22,8 @@ backward compatible.
   over-length slug.
 
 ### Changed
+- Bumped the transliteration dependency to t13n/v2 v2.1.0 (API-compatible;
+  no change to slug output).
 - `Lower` and `Upper` build the slug directly in the target case in a single
   pass (one fewer allocation).
 - `WithSeparator` documents that the separator is not validated and should be
