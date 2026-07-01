@@ -37,8 +37,13 @@ func WithLang(code string) Option {
 }
 
 // WithSeparator sets the word separator (default "-"). An empty separator
-// concatenates the words without any delimiter. The separator should not
-// contain letters or digits.
+// concatenates the words without any delimiter.
+//
+// The separator is not validated. For predictable, URL-safe slugs it should
+// contain only URL-safe, non-alphanumeric characters (for example "-" or
+// "_"). A separator that contains letters or digits merges into the slug body
+// and breaks IsValid; unsafe characters (spaces, ".", "/", "%", ...) produce
+// slugs that are not URL-safe.
 func WithSeparator(sep string) Option {
 	return func(c *config) { c.separator = sep }
 }

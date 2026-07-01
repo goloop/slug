@@ -55,20 +55,59 @@ func isAlnum(b byte) bool {
 		b >= '0' && b <= '9'
 }
 
-// render turns the transliterated ASCII string into the final slug. The
-// common case (no length limit) is a single Builder pass; a MaxLength needs
-// word boundaries, so it goes through tokenize + assemble.
-func (c config) render(raw string) string {
-	if c.maxLen > 0 {
-		return c.assemble(tokenize(raw))
+// caseMode selects the letter case applied while building the slug, so the
+// result is produced in a single pass instead of a second ToLower/ToUpper.
+type caseMode int8
+
+const (
+	casePreserve caseMode = iota // keep the transliterated case
+	caseLower                    // force lower case
+	caseUpper                    // force upper case
+)
+
+// applyCase returns the ASCII byte b in the requested case. The slug body is
+// ASCII, so byte-wise casing is exact.
+func applyCase(b byte, mode caseMode) byte {
+	switch mode {
+	case caseLower:
+		if b >= 'A' && b <= 'Z' {
+			return b + ('a' - 'A')
+		}
+	case caseUpper:
+		if b >= 'a' && b <= 'z' {
+			return b - ('a' - 'A')
+		}
 	}
-	return c.join(raw)
+
+	return b
+}
+
+// writeCased writes s to b applying the case mode. For casePreserve it is a
+// plain WriteString.
+func writeCased(b *strings.Builder, s string, mode caseMode) {
+	if mode == casePreserve {
+		b.WriteString(s)
+		return
+	}
+	for i := 0; i < len(s); i++ {
+		b.WriteByte(applyCase(s[i], mode))
+	}
+}
+
+// render turns the transliterated ASCII string into the final slug in the
+// requested case. The common case (no length limit) is a single Builder pass;
+// a MaxLength needs word boundaries, so it goes through tokenize + assemble.
+func (c config) render(raw string, mode caseMode) string {
+	if c.maxLen > 0 {
+		return c.assemble(tokenize(raw), mode)
+	}
+	return c.join(raw, mode)
 }
 
 // join keeps letter/digit runs and inserts a single separator between them
 // in one pass, without leading, trailing or doubled separators. It returns
 // the fallback when nothing survives.
-func (c config) join(raw string) string {
+func (c config) join(raw string, mode caseMode) string {
 	var b strings.Builder
 	b.Grow(len(raw))
 
@@ -81,7 +120,7 @@ func (c config) join(raw string) string {
 		if pendingSep && b.Len() > 0 {
 			b.WriteString(c.separator)
 		}
-		b.WriteByte(raw[i])
+		b.WriteByte(applyCase(raw[i], mode))
 		pendingSep = false
 	}
 
@@ -117,9 +156,10 @@ func tokenize(s string) []string {
 	return tokens
 }
 
-// assemble joins words with the configured separator, honouring MaxLength
-// (cutting on a word boundary) and returning the fallback for empty input.
-func (c config) assemble(tokens []string) string {
+// assemble joins words with the configured separator in the requested case,
+// honouring MaxLength (cutting on a word boundary) and returning the fallback
+// for empty input.
+func (c config) assemble(tokens []string, mode caseMode) string {
 	if len(tokens) == 0 {
 		return c.fallback
 	}
@@ -141,7 +181,7 @@ func (c config) assemble(tokens []string) string {
 			// The first word alone already exceeds the limit: there is no
 			// boundary to cut on, so cut the word itself.
 			if i == 0 && len(tok) > c.maxLen {
-				b.WriteString(tok[:c.maxLen])
+				writeCased(&b, tok[:c.maxLen], mode)
 			}
 			break
 		}
@@ -149,7 +189,7 @@ func (c config) assemble(tokens []string) string {
 		if i > 0 {
 			b.WriteString(c.separator)
 		}
-		b.WriteString(tok)
+		writeCased(&b, tok, mode)
 	}
 
 	// Non-empty tokens always yield at least one character (the empty case
@@ -157,20 +197,31 @@ func (c config) assemble(tokens []string) string {
 	return b.String()
 }
 
-// withSuffix appends the uniqueness suffix (separator + n) to base. When a
-// MaxLength is set the base is shortened whole word by whole word so the
-// suffixed slug still fits.
-func (c config) withSuffix(base string, n int) string {
+// withSuffix appends the uniqueness suffix (separator + n) to base and reports
+// whether a candidate within MaxLength could be formed. When a MaxLength is
+// set the base is shortened whole word by whole word so the suffixed slug
+// still fits; if even the bare number would overflow the limit, ok is false
+// (no valid candidate exists — the length invariant is never broken).
+func (c config) withSuffix(base string, n int) (string, bool) {
 	num := strconv.Itoa(n)
+
+	// The bare number is the shortest possible candidate; if it does not fit,
+	// nothing longer will either.
+	if c.maxLen > 0 && len(num) > c.maxLen {
+		return "", false
+	}
+
 	if base == "" {
-		return num
+		return num, true
 	}
 
 	suffix := c.separator + num
 	if c.maxLen > 0 && len(base)+len(suffix) > c.maxLen {
 		keep := c.maxLen - len(suffix)
 		if keep <= 0 {
-			return num
+			// The suffix alone fills the limit: fall back to the bare number
+			// (already checked to fit above).
+			return num, true
 		}
 
 		// Prefer to drop whole words from the end...
@@ -190,5 +241,5 @@ func (c config) withSuffix(base string, n int) string {
 		}
 	}
 
-	return base + suffix
+	return base + suffix, true
 }

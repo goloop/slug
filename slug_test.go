@@ -4,6 +4,7 @@ import (
 	"strings"
 	"sync"
 	"testing"
+	"time"
 	"unicode"
 
 	"github.com/goloop/slug/v2/lang"
@@ -216,6 +217,128 @@ func TestMakeUnique(t *testing.T) {
 	}
 	if uniq == "hello" {
 		t.Error("MakeUnique returned the taken base")
+	}
+}
+
+// TestTryMakeUnique covers the strict, bounded uniqueness API: success paths,
+// the maxTries bound and the impossible-under-MaxLength case (BUG-07/08).
+func TestTryMakeUnique(t *testing.T) {
+	// Base free.
+	if got, ok := TryMakeUnique("fresh", func(string) bool { return false }, 0); !ok || got != "fresh" {
+		t.Errorf("base free: got (%q, %v), want (fresh, true)", got, ok)
+	}
+
+	// nil predicate succeeds with the base.
+	if got, ok := TryMakeUnique("post", nil, 0); !ok || got != "post" {
+		t.Errorf("nil exists: got (%q, %v), want (post, true)", got, ok)
+	}
+
+	// Base and the first two numbered candidates taken; base-4 free.
+	taken := map[string]bool{"post": true, "post-2": true, "post-3": true}
+	if got, ok := TryMakeUnique("post", func(s string) bool { return taken[s] }, 0); !ok || got != "post-4" {
+		t.Errorf("chain: got (%q, %v), want (post-4, true)", got, ok)
+	}
+
+	// maxTries is honoured: only base, base-2, base-3 are tried (3 attempts),
+	// so a free base-4 is out of reach.
+	if got, ok := TryMakeUnique("post", func(s string) bool { return taken[s] }, 3); ok {
+		t.Errorf("maxTries=3 should fail, got (%q, %v)", got, ok)
+	}
+
+	// Always-taken predicate returns false within the bound instead of hanging.
+	done := make(chan struct{})
+	go func() {
+		defer close(done)
+		if _, ok := TryMakeUnique("post", func(string) bool { return true }, 1000); ok {
+			t.Error("always-taken predicate must not succeed")
+		}
+	}()
+	select {
+	case <-done:
+	case <-time.After(5 * time.Second):
+		t.Fatal("TryMakeUnique did not terminate")
+	}
+
+	// Impossible under MaxLength: every 1-char candidate is taken, and a
+	// 2-char number cannot fit, so the search must fail (not overflow).
+	s := New(WithMaxLength(1))
+	if got, ok := s.TryMakeUnique("hello", func(string) bool { return true }, 0); ok {
+		t.Errorf("maxLen=1 impossible case must fail, got (%q, %v)", got, ok)
+	}
+}
+
+// TestMakeUniqueNoHang proves MakeUnique terminates even when everything is
+// taken (BUG-07): it must fall back to the base rather than loop forever.
+func TestMakeUniqueNoHang(t *testing.T) {
+	done := make(chan struct{})
+	var got string
+	go func() {
+		defer close(done)
+		got = New(WithMaxLength(6)).MakeUnique("hello world", func(string) bool { return true })
+	}()
+	select {
+	case <-done:
+	case <-time.After(5 * time.Second):
+		t.Fatal("MakeUnique hung on an always-taken predicate")
+	}
+	// Best-effort fallback is the (length-valid) base slug.
+	if len(got) > 6 {
+		t.Errorf("fallback %q exceeds maxLen 6", got)
+	}
+}
+
+// TestMakeUniqueMaxLengthInvariant is a property test: no matter how many
+// candidates are taken, MakeUnique/TryMakeUnique never exceed MaxLength
+// (directly targets BUG-08's multi-digit overflow).
+func TestMakeUniqueMaxLengthInvariant(t *testing.T) {
+	for _, n := range []int{1, 2, 3, 5, 8} {
+		s := New(WithMaxLength(n))
+		seen := map[string]bool{}
+		// Free only after many collisions, forcing multi-digit suffixes.
+		exists := func(candidate string) bool {
+			if len(candidate) > n {
+				t.Fatalf("maxLen=%d: candidate %q exceeds limit", n, candidate)
+			}
+			if len(seen) < 15 {
+				seen[candidate] = true
+				return true
+			}
+			return false
+		}
+		got := s.MakeUnique("hello world foo", exists)
+		if len(got) > n {
+			t.Errorf("maxLen=%d: result %q exceeds limit", n, got)
+		}
+	}
+}
+
+// TestIsValidFallback locks in the documented BUG-09 semantics: IsValid checks
+// canonicality of the input, not whether the input yields a valid slug, so a
+// fallback-mapped input is not valid even though its slug is.
+func TestIsValidFallback(t *testing.T) {
+	s := New(WithFallback("post"))
+	if s.Make("!!!") != "post" {
+		t.Fatalf("precondition: Make(!!!) = %q, want post", s.Make("!!!"))
+	}
+	if s.IsValid("!!!") {
+		t.Error("IsValid(!!!) must be false (input is not itself canonical)")
+	}
+	if !s.IsValid("post") {
+		t.Error("IsValid(post) must be true (the slug itself is canonical)")
+	}
+}
+
+// TestUnsafeSeparator documents that WithSeparator is not validated: a
+// URL-unsafe separator is accepted and still produces a fixed-point slug.
+func TestUnsafeSeparator(t *testing.T) {
+	s := New(WithSeparator("."))
+	got := s.Make("hello world")
+	if got != "hello.world" {
+		t.Errorf("got %q, want hello.world", got)
+	}
+	// Not rejected, and idempotent under its own (unsafe) separator.
+	if !s.IsValid(got) {
+		t.Errorf("IsValid(%q) = false; unsafe separators are still fixed points", got)
 	}
 }
 

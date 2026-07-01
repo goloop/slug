@@ -4,6 +4,32 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.1.0]
+
+Minor release: fixes to `MakeUnique` and a faster `Lower`/`Upper`. Fully
+backward compatible.
+
+### Added
+- `TryMakeUnique(t, exists, maxTries) (string, bool)` — a bounded, strict
+  variant of `MakeUnique` that reports whether a unique slug was produced.
+
+### Fixed
+- `MakeUnique` no longer loops forever when the `exists` predicate always
+  reports "taken"; it now gives up after a bounded number of attempts and
+  returns the base slug (best-effort). Use `TryMakeUnique` to detect failure.
+- `MakeUnique` no longer exceeds `MaxLength`: when even a bare numeric suffix
+  would not fit, the search reports failure instead of emitting an
+  over-length slug.
+
+### Changed
+- `Lower` and `Upper` build the slug directly in the target case in a single
+  pass (one fewer allocation).
+- `WithSeparator` documents that the separator is not validated and should be
+  a URL-safe, non-alphanumeric string.
+- `IsValid` documents its interaction with `WithFallback` (it checks that the
+  input is itself canonical, not that it would produce a valid slug).
+- Removed the stale `benchmarks.txt` snapshot (see `benchmarks_test.go`).
+
 ## [2.0.0]
 
 Major release. The module path is now `github.com/goloop/slug/v2` and the

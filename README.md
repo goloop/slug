@@ -80,6 +80,11 @@ s.MakeUnique("hello world", func(candidate string) bool {
 	return exists(candidate) // your lookup; returns true if taken
 }) // hello-world, hello-world-2, ...
 
+// Strict variant: bounded, and reports whether a unique slug was found.
+if slug, ok := s.TryMakeUnique("hello world", exists, 100); ok {
+	use(slug)
+}
+
 slug.IsValid("hello-world") // true
 slug.IsValid("hello world") // false
 ```
@@ -93,6 +98,7 @@ slug.IsValid("hello world") // false
 - `Upper(t string) string` — uppercase slug.
 - `IsValid(t string) bool` — whether `t` is already a canonical slug.
 - `MakeUnique(t string, exists func(string) bool) string` — unique slug.
+- `TryMakeUnique(t string, exists func(string) bool, maxTries int) (string, bool)` — bounded unique slug.
 
 ### Options
 

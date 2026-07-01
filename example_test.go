@@ -66,3 +66,12 @@ func ExampleSlug_MakeUnique() {
 	}))
 	// Output: hello-world-3
 }
+
+func ExampleSlug_TryMakeUnique() {
+	taken := map[string]bool{"post": true, "post-2": true}
+	s := slug.New()
+	if got, ok := s.TryMakeUnique("post", func(x string) bool { return taken[x] }, 100); ok {
+		fmt.Println(got)
+	}
+	// Output: post-3
+}

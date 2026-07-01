@@ -32,3 +32,9 @@ func IsValid(t string) bool {
 func MakeUnique(t string, exists func(string) bool) string {
 	return defaultSlug.MakeUnique(t, exists)
 }
+
+// TryMakeUnique returns a unique slug of t and reports success (see
+// (*Slug).TryMakeUnique), using the default configuration.
+func TryMakeUnique(t string, exists func(string) bool, maxTries int) (string, bool) {
+	return defaultSlug.TryMakeUnique(t, exists, maxTries)
+}

@@ -89,53 +89,64 @@ func TestAssemble(t *testing.T) {
 		name   string
 		cfg    config
 		tokens []string
+		mode   caseMode
 		want   string
 	}{
-		{"basic", config{separator: "-"}, []string{"a", "b", "c"}, "a-b-c"},
-		{"custom sep", config{separator: "_"}, []string{"a", "b"}, "a_b"},
-		{"empty sep", config{separator: ""}, []string{"a", "b"}, "ab"},
-		{"empty -> fallback", config{separator: "-", fallback: "n-a"}, nil, "n-a"},
-		{"empty -> empty", config{separator: "-"}, nil, ""},
-		{"maxlen boundary", config{separator: "-", maxLen: 3}, []string{"aa", "bb", "cc"}, "aa"},
-		{"maxlen exact", config{separator: "-", maxLen: 5}, []string{"aa", "bb", "cc"}, "aa-bb"},
-		{"maxlen hard cut", config{separator: "-", maxLen: 4}, []string{"abcdef"}, "abcd"},
+		{"basic", config{separator: "-"}, []string{"a", "b", "c"}, casePreserve, "a-b-c"},
+		{"custom sep", config{separator: "_"}, []string{"a", "b"}, casePreserve, "a_b"},
+		{"empty sep", config{separator: ""}, []string{"a", "b"}, casePreserve, "ab"},
+		{"empty -> fallback", config{separator: "-", fallback: "n-a"}, nil, casePreserve, "n-a"},
+		{"empty -> empty", config{separator: "-"}, nil, casePreserve, ""},
+		{"maxlen boundary", config{separator: "-", maxLen: 3}, []string{"aa", "bb", "cc"}, casePreserve, "aa"},
+		{"maxlen exact", config{separator: "-", maxLen: 5}, []string{"aa", "bb", "cc"}, casePreserve, "aa-bb"},
+		{"maxlen hard cut", config{separator: "-", maxLen: 4}, []string{"abcdef"}, casePreserve, "abcd"},
+		// Case mode applies while assembling (MaxLength path).
+		{"lower", config{separator: "-"}, []string{"Aa", "Bb"}, caseLower, "aa-bb"},
+		{"upper", config{separator: "-"}, []string{"Aa", "Bb"}, caseUpper, "AA-BB"},
+		{"upper hard cut", config{separator: "-", maxLen: 3}, []string{"abcdef"}, caseUpper, "ABC"},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := tt.cfg.assemble(tt.tokens); got != tt.want {
+			if got := tt.cfg.assemble(tt.tokens, tt.mode); got != tt.want {
 				t.Errorf("got %q, want %q", got, tt.want)
 			}
 		})
 	}
 }
 
-// TestWithSuffix checks the uniqueness suffix, including its interaction
-// with MaxLength (dropping whole words, then hard-cutting a single word).
+// TestWithSuffix checks the uniqueness suffix, including its interaction with
+// MaxLength (dropping whole words, hard-cutting a single word) and the
+// failure signal when even the bare number cannot fit (BUG-08).
 func TestWithSuffix(t *testing.T) {
 	tests := []struct {
-		name string
-		cfg  config
-		base string
-		n    int
-		want string
+		name   string
+		cfg    config
+		base   string
+		n      int
+		want   string
+		wantOk bool
 	}{
-		{"plain", config{separator: "-"}, "post", 2, "post-2"},
-		{"empty base", config{separator: "-"}, "", 2, "2"},
-		{"fits", config{separator: "-", maxLen: 10}, "post", 3, "post-3"},
-		{"drop word", config{separator: "-", maxLen: 6}, "aa-bb-cc", 2, "aa-2"},
-		{"hard cut word", config{separator: "-", maxLen: 6}, "hello", 2, "hell-2"},
-		{"empty sep cut", config{separator: "", maxLen: 5}, "hello", 9, "hell9"},
-		{"no room", config{separator: "-", maxLen: 2}, "hello", 2, "2"},
+		{"plain", config{separator: "-"}, "post", 2, "post-2", true},
+		{"empty base", config{separator: "-"}, "", 2, "2", true},
+		{"fits", config{separator: "-", maxLen: 10}, "post", 3, "post-3", true},
+		{"drop word", config{separator: "-", maxLen: 6}, "aa-bb-cc", 2, "aa-2", true},
+		{"hard cut word", config{separator: "-", maxLen: 6}, "hello", 2, "hell-2", true},
+		{"empty sep cut", config{separator: "", maxLen: 5}, "hello", 9, "hell9", true},
+		{"suffix fills limit", config{separator: "-", maxLen: 2}, "hello", 2, "2", true},
+		{"single digit fits", config{separator: "-", maxLen: 1}, "hello", 9, "9", true},
+		// BUG-08: the bare number itself no longer fits -> no candidate.
+		{"multi-digit overflow", config{separator: "-", maxLen: 1}, "hello", 10, "", false},
+		{"empty base overflow", config{separator: "-", maxLen: 1}, "", 42, "", false},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got := tt.cfg.withSuffix(tt.base, tt.n)
-			if got != tt.want {
-				t.Errorf("got %q, want %q", got, tt.want)
+			got, ok := tt.cfg.withSuffix(tt.base, tt.n)
+			if got != tt.want || ok != tt.wantOk {
+				t.Errorf("got (%q, %v), want (%q, %v)", got, ok, tt.want, tt.wantOk)
 			}
-			if tt.cfg.maxLen > 0 && len(got) > tt.cfg.maxLen {
+			if ok && tt.cfg.maxLen > 0 && len(got) > tt.cfg.maxLen {
 				t.Errorf("result %q exceeds maxLen %d", got, tt.cfg.maxLen)
 			}
 		})
