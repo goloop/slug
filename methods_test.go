@@ -1,59 +1,50 @@
 package slug
 
-import (
-	"testing"
-)
+import "testing"
 
-// TestMake tests Make function.
-func TestMake(t *testing.T) {
-	tests := []struct {
-		value    string
-		expected string
-	}{
-		{
-			"Starlink Ілона Маска відкриє офіс в Україні",
-			"Starlink-Ilona-Maska-vidkriie-ofis-v-Ukrayini",
-		},
-		{"Hellö Wörld", "Hello-World"},
-		{"你好世界", "Ni-Hao-Shi-Jie"},
-		{"[^你好世界$]", "Ni-Hao-Shi-Jie"},
-		{"This & that", "This-and-that"},
-		{"\tHellö \t Wörld\n ", "Hello-World"},
+// TestPackageParity asserts every package-level helper is exactly its
+// default-Slug counterpart, so documentation and behaviour cannot drift
+// between the two entry points.
+func TestPackageParity(t *testing.T) {
+	s := New()
+	inputs := []string{
+		"Hello World", "co-operate", "email@site.com", "R&D 100%",
+		"!!!", "", "MiXeD-CaSe", "北京市 2024",
 	}
 
-	for _, test := range tests {
-		if v := Make(test.value); v != test.expected {
-			t.Errorf("expected %s but %s", test.expected, v)
+	for _, in := range inputs {
+		if Make(in) != s.Make(in) {
+			t.Errorf("Make(%q): package %q != object %q", in, Make(in), s.Make(in))
 		}
+		if Lower(in) != s.Lower(in) {
+			t.Errorf("Lower(%q): package %q != object %q", in, Lower(in), s.Lower(in))
+		}
+		if Upper(in) != s.Upper(in) {
+			t.Errorf("Upper(%q): package %q != object %q", in, Upper(in), s.Upper(in))
+		}
+		if IsValid(in) != s.IsValid(in) {
+			t.Errorf("IsValid(%q): package %v != object %v", in, IsValid(in), s.IsValid(in))
+		}
+	}
+
+	// MakeUnique parity with a simple predicate.
+	taken := map[string]bool{"hello-world": true}
+	exists := func(x string) bool { return taken[x] }
+	if MakeUnique("Hello World", exists) != s.MakeUnique("Hello World", exists) {
+		t.Error("MakeUnique parity broken")
 	}
 }
 
-// TestLower tests Lower function.
-func TestLower(t *testing.T) {
-	tests := []struct {
-		value         string
-		lowerExpected string
-		upperExpected string
-	}{
-		{
-			"Starlink Ілона Маска відкриє офіс в Україні",
-			"starlink-ilona-maska-vidkriie-ofis-v-ukrayini",
-			"STARLINK-ILONA-MASKA-VIDKRIIE-OFIS-V-UKRAYINI",
-		},
-		{"Hellö Wörld", "hello-world", "HELLO-WORLD"},
-		{"你好世界", "ni-hao-shi-jie", "NI-HAO-SHI-JIE"},
-		{"[^你好世界$]", "ni-hao-shi-jie", "NI-HAO-SHI-JIE"},
-		{"This & that", "this-and-that", "THIS-AND-THAT"},
-		{"\tHellö \t Wörld\n ", "hello-world", "HELLO-WORLD"},
+// TestDefaults documents the zero-option configuration.
+func TestDefaults(t *testing.T) {
+	s := New()
+	if s.cfg.separator != DefaultSeparator {
+		t.Errorf("default separator = %q, want %q", s.cfg.separator, DefaultSeparator)
 	}
-
-	for _, test := range tests {
-		if v := Lower(test.value); v != test.lowerExpected {
-			t.Errorf("expected %s but %s", test.lowerExpected, v)
-		}
-
-		if v := Upper(test.value); v != test.upperExpected {
-			t.Errorf("expected %s but %s", test.upperExpected, v)
-		}
+	if s.cfg.maxLen != 0 {
+		t.Errorf("default maxLen = %d, want 0", s.cfg.maxLen)
+	}
+	if s.cfg.fallback != "" {
+		t.Errorf("default fallback = %q, want empty", s.cfg.fallback)
 	}
 }

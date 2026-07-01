@@ -1,62 +1,61 @@
 package slug
 
 import (
+	"strings"
 	"testing"
+
+	"github.com/goloop/slug/v2/lang"
 )
 
 var (
 	testString   = "Hello 世界 @ #$% &~_ Testing-Slug"
+	asciiString  = "The Quick Brown Fox Jumps Over The Lazy Dog"
+	longString   = strings.Repeat("Привіт, світ! Hello 世界. ", 40) // > 256 runes
 	resultString string
-	benchResults = make([]string, 0, 100)
 )
 
 func BenchmarkMake(b *testing.B) {
+	b.ReportAllocs()
 	for i := 0; i < b.N; i++ {
 		resultString = Make(testString)
 	}
 }
 
 func BenchmarkLower(b *testing.B) {
+	b.ReportAllocs()
 	for i := 0; i < b.N; i++ {
 		resultString = Lower(testString)
 	}
 }
 
 func BenchmarkUpper(b *testing.B) {
+	b.ReportAllocs()
 	for i := 0; i < b.N; i++ {
 		resultString = Upper(testString)
 	}
 }
 
-func BenchmarkSlugMake(b *testing.B) {
-	s := New()
+// BenchmarkMakeASCII measures the common case of already-Latin input.
+func BenchmarkMakeASCII(b *testing.B) {
+	b.ReportAllocs()
 	for i := 0; i < b.N; i++ {
-		resultString = s.Make(testString)
+		resultString = Make(asciiString)
 	}
 }
 
-func BenchmarkSlugLower(b *testing.B) {
-	s := New()
+// BenchmarkMakeLong exercises the multi-chunk transliteration path.
+func BenchmarkMakeLong(b *testing.B) {
+	b.ReportAllocs()
 	for i := 0; i < b.N; i++ {
-		resultString = s.Lower(testString)
+		resultString = Make(longString)
 	}
 }
 
-func BenchmarkSlugUpper(b *testing.B) {
-	s := New()
-	for i := 0; i < b.N; i++ {
-		resultString = s.Upper(testString)
-	}
-}
-
-// Benchmark з різними мовними налаштуваннями
 func BenchmarkSlugWithLang(b *testing.B) {
-	s := New()
-	langs := []string{"uk", "en", "de", "fr"}
-
-	for _, l := range langs {
-		b.Run("Lang_"+l, func(b *testing.B) {
-			s.Lang(l)
+	for _, code := range []string{lang.UK, lang.EN, lang.DE, lang.FR} {
+		s := New(WithLang(code))
+		b.Run("Lang_"+code, func(b *testing.B) {
+			b.ReportAllocs()
 			for i := 0; i < b.N; i++ {
 				resultString = s.Make(testString)
 			}

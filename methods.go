@@ -1,29 +1,34 @@
 package slug
 
-import (
-	"strings"
+// defaultSlug backs the package-level helpers. It is created once and never
+// mutated, so the helpers are safe for concurrent use.
+var defaultSlug = New()
 
-	"github.com/goloop/t13n"
-	"github.com/goloop/t13n/lang"
-)
-
-// Make returns slug from string.
+// Make returns the slug of t using the default configuration (neutral
+// transliteration, "-" separator, original letter case preserved).
+// It is shorthand for New().Make(t).
 func Make(t string) string {
-	var result string
-
-	result = t13n.Render(lang.None, t, slugRules)
-	result = dusepRegx.ReplaceAllString(result, "-")
-	result = wrongRegx.ReplaceAllString(result, "")
-
-	return result
+	return defaultSlug.Make(t)
 }
 
-// Lower returns slug in lowercase.
+// Lower is Make with the result lowercased.
 func Lower(t string) string {
-	return strings.ToLower(Make(t))
+	return defaultSlug.Lower(t)
 }
 
-// Upper returns slug in uppercase.
+// Upper is Make with the result uppercased.
 func Upper(t string) string {
-	return strings.ToUpper(Make(t))
+	return defaultSlug.Upper(t)
+}
+
+// IsValid reports whether t is already a canonical slug under the default
+// configuration (see (*Slug).IsValid).
+func IsValid(t string) bool {
+	return defaultSlug.IsValid(t)
+}
+
+// MakeUnique returns a slug of t made unique via exists (see
+// (*Slug).MakeUnique), using the default configuration.
+func MakeUnique(t string, exists func(string) bool) string {
+	return defaultSlug.MakeUnique(t, exists)
 }

@@ -1,29 +1,41 @@
-// Package slug provides functionality to generate URL-friendly slugs
-// from Unicode strings with support for multiple languages.
+// Package slug generates URL-friendly slugs from Unicode strings in any
+// language.
 //
-// This package is designed to create clean, URL-safe strings from
-// any input text, with special handling for various languages and
-// character sets. It supports:
+// A slug is built in three steps: the input is transliterated to ASCII,
+// split into words on every character that is not a letter or a digit, and
+// the words are joined with a separator ("-" by default). Leading, trailing
+// and repeated separators are removed, so the result contains only letters,
+// digits and single separators.
 //
-//   - Basic Latin characters (a-z, A-Z).
-//   - Numbers (0-9).
-//   - Special character conversion (spaces, underscores to hyphens).
-//   - Multi-language support through transliteration.
-//   - Custom character replacement rules.
-//   - Case transformation (upper/lower).
+// # Package-level helpers
 //
-// Usage:
+// The package functions use a default configuration (neutral
+// transliteration, "-" separator, original letter case preserved):
 //
-// Basic usage with the package-level functions:
+//	slug.Make("Hello World")  // "Hello-World"
+//	slug.Lower("Hello World") // "hello-world"
+//	slug.Upper("Hello World") // "HELLO-WORLD"
 //
-//	slug.Make("Hello World")  // returns "Hello-World"
-//	slug.Lower("Hello World") // returns "hello-world"
-//	slug.Upper("Hello World") // returns "HELLO-WORLD"
+// # Configurable slugs
 //
-// Using the Slug type for more control:
+// New builds a Slug from functional options for full control:
 //
-//	s := slug.New()
-//	s.Lang("uk").Make("Привіт Світ") // returns transliterated version
+//	s := slug.New(
+//		slug.WithLang(lang.UK),   // regional transliteration
+//		slug.WithSeparator("_"),  // custom separator
+//		slug.WithMaxLength(60),   // cut on a word boundary
+//		slug.WithFallback("post"),// value for an empty result
+//	)
+//	s.Make("Привіт, світ!") // "Pryvit_svit"
 //
-// The package is thread-safe and can be used in concurrent applications.
+// A few characters carry meaning and become words: "@" -> "at",
+// "&" -> "and", "#" -> "sharp", "%" -> "pct" (e.g. "r&d" -> "r-and-d").
+// A true apostrophe between letters is dropped so the letters join
+// ("it's" -> "its").
+//
+// # Concurrency
+//
+// A Slug is immutable after New, so a single value may be shared and used
+// by multiple goroutines concurrently; the package-level helpers are safe
+// for concurrent use as well.
 package slug
