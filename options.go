@@ -60,6 +60,11 @@ func WithMaxLength(n int) Option {
 
 // WithFallback sets the value returned when the input produces an empty
 // slug (e.g. Make("!!!")). Without it such input yields an empty string.
+//
+// The fallback is itself normalized through the slug pipeline at construction
+// time, so it always obeys the canonical-slug and MaxLength invariants. A
+// fallback that normalizes to nothing (for example "!!!") is treated as no
+// fallback.
 func WithFallback(s string) Option {
 	return func(c *config) { c.fallback = s }
 }

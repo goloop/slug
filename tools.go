@@ -3,6 +3,7 @@ package slug
 import (
 	"strconv"
 	"strings"
+	"unicode"
 
 	"github.com/goloop/t13n/v2/lang"
 )
@@ -42,6 +43,18 @@ func slugRules(ts lang.TransState) (string, int, bool) {
 		return symSharp, 0, true
 	case '%':
 		return symPct, 0, true
+	}
+
+	// A rune with no transliteration (an emoji, a symbol outside the tables)
+	// would otherwise vanish and glue its neighbours together. Turn a visible
+	// one into a word boundary so it splits words like any other punctuation
+	// ("fire🔥sale" -> "fire-sale"); keep invisible format characters
+	// (ZWJ/ZWNJ/soft hyphen) glued, matching the "split on non-letters" model.
+	if ts.Value == "" {
+		if unicode.IsGraphic(ts.Curr) {
+			return " ", 0, true
+		}
+		return "", 0, true
 	}
 
 	return ts.Value, 0, true

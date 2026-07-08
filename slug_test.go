@@ -120,6 +120,55 @@ func TestFallback(t *testing.T) {
 	}
 }
 
+// TestFallbackNormalized checks that the fallback is itself run through the
+// pipeline: it stays canonical and within MaxLength, and a fallback that
+// normalizes to nothing behaves like no fallback.
+func TestFallbackNormalized(t *testing.T) {
+	s := New(WithFallback("My Fallback!!"), WithMaxLength(5))
+	got := s.Make("!!!")
+	if got != "My" {
+		t.Errorf("normalized+clamped fallback: got %q, want %q", got, "My")
+	}
+	if !s.IsValid(got) {
+		t.Errorf("fallback %q must be a canonical slug", got)
+	}
+
+	// A fallback that normalizes to empty is treated as no fallback.
+	empty := New(WithFallback("!!!"))
+	if got := empty.Make("..."); got != "" {
+		t.Errorf("fallback that normalizes to empty: got %q, want empty", got)
+	}
+}
+
+// TestNewNilOption makes sure New tolerates nil options, a common result of
+// conditionally assembling an option slice.
+func TestNewNilOption(t *testing.T) {
+	s := New(nil, WithSeparator("_"), nil)
+	if got := s.Make("Hello World"); got != "Hello_World" {
+		t.Errorf("New with nil options: got %q, want %q", got, "Hello_World")
+	}
+}
+
+// TestUntranslatableBoundary locks in that a visible rune with no
+// transliteration (an emoji) becomes a word boundary rather than gluing its
+// neighbours, while an invisible format character stays glued.
+func TestUntranslatableBoundary(t *testing.T) {
+	tests := []struct {
+		in, want string
+	}{
+		{"fire🔥sale", "fire-sale"},
+		{"a💥b", "a-b"},
+		{"hello🙂world", "hello-world"},
+		{"a‍b", "ab"}, // zero-width joiner: glue
+		{"a­b", "ab"}, // soft hyphen: glue
+	}
+	for _, tt := range tests {
+		if got := Make(tt.in); got != tt.want {
+			t.Errorf("Make(%q) = %q, want %q", tt.in, got, tt.want)
+		}
+	}
+}
+
 // TestSeparator checks a custom separator, including the empty one, and that
 // the separator never leaks into a leading/trailing position.
 func TestSeparator(t *testing.T) {
@@ -264,6 +313,12 @@ func TestTryMakeUnique(t *testing.T) {
 	s := New(WithMaxLength(1))
 	if got, ok := s.TryMakeUnique("hello", func(string) bool { return true }, 0); ok {
 		t.Errorf("maxLen=1 impossible case must fail, got (%q, %v)", got, ok)
+	}
+
+	// An input that produces an empty base (no fallback) has no meaningful
+	// unique slug: it must report failure, not ("", true).
+	if got, ok := TryMakeUnique("!!!", func(string) bool { return false }, 0); ok || got != "" {
+		t.Errorf("empty base: got (%q, %v), want (\"\", false)", got, ok)
 	}
 }
 

@@ -28,10 +28,23 @@ type Slug struct {
 func New(opts ...Option) *Slug {
 	cfg := config{lang: lang.None, separator: DefaultSeparator}
 	for _, opt := range opts {
-		opt(&cfg)
+		if opt != nil {
+			opt(&cfg)
+		}
 	}
 
-	return &Slug{cfg: cfg}
+	s := &Slug{cfg: cfg}
+
+	// Normalize the fallback through the same pipeline so it obeys the
+	// canonical-slug and MaxLength invariants that Make guarantees. Clearing
+	// it first keeps Make from recursing back into the fallback.
+	if cfg.fallback != "" {
+		fb := cfg.fallback
+		s.cfg.fallback = ""
+		s.cfg.fallback = s.Make(fb)
+	}
+
+	return s
 }
 
 // Make returns the slug of t. The letter case of the input is preserved;
@@ -114,6 +127,11 @@ func (s *Slug) TryMakeUnique(t string, exists func(string) bool, maxTries int) (
 	}
 
 	base := s.Make(t)
+	if base == "" {
+		// No fallback and the input produced nothing: there is no meaningful
+		// unique slug to report, so signal failure instead of ("", true).
+		return "", false
+	}
 	if exists == nil || !exists(base) {
 		return base, true
 	}

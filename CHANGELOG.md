@@ -4,6 +4,30 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.2.0]
+
+Minor release: fixes to fallback handling and word boundaries. Behavioural
+changes are noted below.
+
+### Fixed
+- `WithFallback` is now normalized through the slug pipeline at construction
+  time, so the fallback always obeys the canonical-slug and `MaxLength`
+  invariants instead of being returned verbatim. A fallback that normalizes to
+  nothing is treated as no fallback.
+- A visible character with no transliteration (an emoji, an out-of-table
+  symbol) now acts as a word boundary instead of vanishing and gluing its
+  neighbours, so words separated by such a character are no longer merged.
+  Invisible format characters (ZWJ/ZWNJ/soft hyphen) still join the
+  surrounding letters.
+- `New` tolerates `nil` options instead of panicking, which supports the
+  common pattern of conditionally assembling an option slice.
+- `TryMakeUnique` reports `("", false)` when the input produces an empty base
+  slug and no fallback is set, instead of the misleading `("", true)`.
+
+### Changed
+- Bumped the transliteration dependency to t13n/v2 v2.1.1 (documentation-only
+  release; no change to slug output).
+
 ## [2.1.0]
 
 Minor release: fixes to `MakeUnique` and a faster `Lower`/`Upper`. Fully
