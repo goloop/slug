@@ -70,7 +70,14 @@ func WithLang(code string) Option
 func WithSeparator(sep string) Option // дефолт "-" (DefaultSeparator)
 func WithMaxLength(n int) Option
 func WithFallback(s string) Option
+func WithLowercase() Option // Make/MakeUnique у нижньому регістрі
+func WithUppercase() Option // Make/MakeUnique у верхньому регістрі
 ```
+
+За замовчуванням `Make` зберігає регістр після транслітерації. `WithLowercase`
+(чи `WithUppercase`) задає регістр, який застосовують `Make`, `MakeUnique` і
+`TryMakeUnique`, тож унікальний slug у нижньому регістрі (звична URL-конвенція)
+більше не потребує ручного `ToLower`.
 
 `New` повертає конфігурований, незмінний «виробник», що надає ті самі методи, що
 й пакетні функції (`Make`, `Lower`, `Upper`, `IsValid`, `MakeUnique`,

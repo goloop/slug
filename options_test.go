@@ -70,3 +70,26 @@ func TestOptionsIndependent(t *testing.T) {
 			a.Make("x y"), b.Make("x y"))
 	}
 }
+
+// WithLowercase / WithUppercase set the case Make and MakeUnique apply, while
+// the default still preserves the transliterated case.
+func TestWithCaseOptions(t *testing.T) {
+	if got := New(WithLowercase()).Make("Hello World"); got != "hello-world" {
+		t.Errorf("WithLowercase Make = %q, want hello-world", got)
+	}
+	if got := New(WithUppercase()).Make("Hello World"); got != "HELLO-WORLD" {
+		t.Errorf("WithUppercase Make = %q, want HELLO-WORLD", got)
+	}
+	if got := New().Make("Hello World"); got != "Hello-World" {
+		t.Errorf("default Make = %q, want preserved Hello-World", got)
+	}
+
+	// MakeUnique built on Make follows the configured case, so a lower-case
+	// unique slug no longer needs a manual ToLower.
+	s := New(WithLowercase())
+	taken := map[string]bool{"hello-world": true}
+	got := s.MakeUnique("Hello World", func(x string) bool { return taken[x] })
+	if got != "hello-world-2" {
+		t.Errorf("lower MakeUnique = %q, want hello-world-2", got)
+	}
+}

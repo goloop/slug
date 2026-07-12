@@ -4,6 +4,17 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.3.0]
+
+Minor release: a configurable default case.
+
+### Added
+- `WithLowercase` and `WithUppercase` set the case that `Make`, `MakeUnique`
+  and `TryMakeUnique` apply. Previously only the one-off `Lower`/`Upper` methods
+  could force a case, so a unique lower-case slug (the usual URL convention)
+  required lower-casing the input by hand before `MakeUnique`. The default is
+  unchanged: `Make` preserves the transliterated case.
+
 ## [2.2.0]
 
 Minor release: fixes to fallback handling and word boundaries. Behavioural

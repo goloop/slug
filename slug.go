@@ -47,8 +47,10 @@ func New(opts ...Option) *Slug {
 	return s
 }
 
-// Make returns the slug of t. The letter case of the input is preserved;
-// use Lower or Upper to force a case.
+// Make returns the slug of t. By default the letter case of the input is
+// preserved; configure WithLowercase or WithUppercase for a default case, or
+// use Lower or Upper to force a case on a single call. MakeUnique and
+// TryMakeUnique build on Make, so they follow the configured default case too.
 //
 // The input is transliterated to ASCII and then split into words on any
 // character that is not a letter or a digit; the words are joined with the
@@ -56,7 +58,7 @@ func New(opts ...Option) *Slug {
 // removed. If the result is empty the configured fallback is returned
 // (empty by default).
 func (s *Slug) Make(t string) string {
-	return s.make(t, casePreserve)
+	return s.make(t, s.cfg.defaultCase)
 }
 
 // Lower is Make with the result lowercased.

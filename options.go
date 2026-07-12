@@ -24,6 +24,12 @@ type config struct {
 	// fallback is returned when the input yields an empty slug (input made
 	// up entirely of separators/dropped characters). Empty by default.
 	fallback string
+
+	// defaultCase is the case Make (and therefore MakeUnique and
+	// TryMakeUnique) applies. The zero value keeps the transliterated case;
+	// WithLowercase and WithUppercase force a case. Lower and Upper always
+	// force their own case regardless of this setting.
+	defaultCase caseMode
 }
 
 // An Option configures a Slug in New.
@@ -67,4 +73,18 @@ func WithMaxLength(n int) Option {
 // fallback.
 func WithFallback(s string) Option {
 	return func(c *config) { c.fallback = s }
+}
+
+// WithLowercase makes Make (and MakeUnique/TryMakeUnique built on it) return a
+// lower-case slug, which is the usual convention for URL slugs. Without it the
+// transliterated case is preserved; use Lower for a one-off lower-case slug.
+func WithLowercase() Option {
+	return func(c *config) { c.defaultCase = caseLower }
+}
+
+// WithUppercase makes Make (and MakeUnique/TryMakeUnique built on it) return an
+// upper-case slug. Without it the transliterated case is preserved; use Upper
+// for a one-off upper-case slug.
+func WithUppercase() Option {
+	return func(c *config) { c.defaultCase = caseUpper }
 }

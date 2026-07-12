@@ -70,6 +70,18 @@ func WithLang(code string) Option
 func WithSeparator(sep string) Option // default "-" (DefaultSeparator)
 func WithMaxLength(n int) Option
 func WithFallback(s string) Option
+func WithLowercase() Option // Make/MakeUnique return lower-case
+func WithUppercase() Option // Make/MakeUnique return upper-case
+```
+
+By default `Make` preserves the transliterated case. `WithLowercase` (or
+`WithUppercase`) sets the case that `Make`, `MakeUnique` and `TryMakeUnique`
+apply, so a unique lower-case URL slug no longer needs a manual `ToLower`:
+
+```go
+s := slug.New(slug.WithLowercase())
+s.Make("Привіт, світ!")                 // "pryvit-svit"
+s.MakeUnique("Привіт, світ!", taken)    // "pryvit-svit-2" if taken
 ```
 
 `New` returns a configured, immutable maker exposing the same methods as the
