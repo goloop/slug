@@ -138,10 +138,25 @@ func (c config) join(raw string, mode caseMode) string {
 	}
 
 	if b.Len() == 0 {
-		return c.fallback
+		return c.casedFallback(mode)
 	}
 
 	return b.String()
+}
+
+// casedFallback returns the fallback in the requested case. The fallback is
+// stored as Make would render it, so Lower, Upper and MakeURL have to case it
+// on the way out; otherwise input that produces nothing escapes the case the
+// caller asked for, and a URL slug could come back capitalised.
+func (c config) casedFallback(mode caseMode) string {
+	switch mode {
+	case caseLower:
+		return strings.ToLower(c.fallback)
+	case caseUpper:
+		return strings.ToUpper(c.fallback)
+	}
+
+	return c.fallback
 }
 
 // tokenize splits an ASCII string into its maximal runs of letters and
@@ -174,7 +189,7 @@ func tokenize(s string) []string {
 // for empty input.
 func (c config) assemble(tokens []string, mode caseMode) string {
 	if len(tokens) == 0 {
-		return c.fallback
+		return c.casedFallback(mode)
 	}
 
 	var b strings.Builder

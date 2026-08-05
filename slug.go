@@ -57,8 +57,30 @@ func New(opts ...Option) *Slug {
 // configured separator. Leading, trailing and repeated separators are
 // removed. If the result is empty the configured fallback is returned
 // (empty by default).
+//
+// The result is not URL-canonical. Transliteration keeps the case of the
+// source, so a non-Latin title comes back capitalised - Make("Осінній
+// настрій") is "Osinnii-nastrii" - and URL paths compare case-sensitively.
+// Use MakeURL when the slug goes into a URL, or WithLowercase to make it the
+// default for every method of this Slug.
 func (s *Slug) Make(t string) string {
 	return s.make(t, s.cfg.defaultCase)
+}
+
+// MakeURL returns the URL-canonical slug of t: what Make produces, lowercased
+// whatever the configured default case. URL paths compare case-sensitively, so
+// one title must not be able to reach a resource under two spellings.
+//
+//	s.Make("Осінній настрій")    // "Osinnii-nastrii"
+//	s.MakeURL("Осінній настрій") // "osinnii-nastrii"
+//
+// It gives the same result as Lower and is named after the job rather than the
+// operation: MakeURL when the slug becomes part of a URL, Lower when a
+// lower-case slug is simply what is wanted. For a unique URL slug, configure
+// the Slug with WithLowercase and use MakeUnique - it builds on Make, not on
+// this method.
+func (s *Slug) MakeURL(t string) string {
+	return s.make(t, caseLower)
 }
 
 // Lower is Make with the result lowercased.

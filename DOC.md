@@ -45,6 +45,7 @@ import "github.com/goloop/slug/v2"
 
 ```go
 func Make(t string) string
+func MakeURL(t string) string
 func Lower(t string) string
 func Upper(t string) string
 func IsValid(t string) bool
@@ -56,9 +57,10 @@ Each uses the default configuration (separator `-`, no length limit, no
 transliteration language):
 
 ```go
-slug.Make("Hello World")  // "Hello-World"
-slug.Lower("Hello World") // "hello-world"
-slug.Upper("Hello World") // "HELLO-WORLD"
+slug.Make("Hello World")    // "Hello-World"
+slug.MakeURL("Hello World") // "hello-world"
+slug.Lower("Hello World")   // "hello-world"
+slug.Upper("Hello World")   // "HELLO-WORLD"
 ```
 
 ## The Slug type and options
@@ -151,6 +153,38 @@ locales.
 slug.Make("Hello World")  // "Hello-World"
 slug.Lower("Hello World") // "hello-world"
 slug.Upper("Hello World") // "HELLO-WORLD"
+```
+
+### Slugs that go into a URL
+
+`Make` is not URL-canonical. Transliteration capitalises per source letter, so
+a non-Latin title comes back with a capital in it:
+
+```go
+slug.Make("Осінній настрій")    // "Osinnii-nastrii"
+slug.MakeURL("Осінній настрій") // "osinnii-nastrii"
+```
+
+URL paths compare case-sensitively, so one title must not be able to reach a
+resource under two spellings. `MakeURL` gives the same result as `Lower` and is
+named after the job rather than the operation — reach for it whenever the slug
+becomes part of a URL.
+
+For a **unique** URL slug, configure the maker instead: `MakeUnique` and
+`TryMakeUnique` build on `Make`, so only the option covers them.
+
+```go
+s := slug.New(slug.WithLowercase())
+s.MakeUnique("Осінній настрій", exists) // "osinnii-nastrii", "osinnii-nastrii-2", ...
+```
+
+A configured fallback follows the case that was asked for, so an input that
+produces nothing cannot slip a capital letter past `MakeURL`:
+
+```go
+s := slug.New(slug.WithFallback("Post"))
+s.Make("!!!")    // "Post"
+s.MakeURL("!!!") // "post"
 ```
 
 ## Uniqueness

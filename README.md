@@ -44,9 +44,15 @@ import (
 )
 
 func main() {
-    fmt.Println(slug.Make("Hello World"))  // Hello-World
-    fmt.Println(slug.Lower("Hello World")) // hello-world
-    fmt.Println(slug.Upper("Hello World")) // HELLO-WORLD
+    fmt.Println(slug.Make("Hello World"))    // Hello-World
+    fmt.Println(slug.MakeURL("Hello World")) // hello-world
+    fmt.Println(slug.Lower("Hello World"))   // hello-world
+    fmt.Println(slug.Upper("Hello World"))   // HELLO-WORLD
+
+    // Make keeps the case transliteration produced, so a non-Latin title
+    // comes back capitalised. Use MakeURL when the slug goes into a URL.
+    fmt.Println(slug.Make("Осінній настрій"))    // Osinnii-nastrii
+    fmt.Println(slug.MakeURL("Осінній настрій")) // osinnii-nastrii
 
     // Punctuation separates words; it is never dropped silently.
     fmt.Println(slug.Make("co-operate"))     // co-operate

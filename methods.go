@@ -7,8 +7,17 @@ var defaultSlug = New()
 // Make returns the slug of t using the default configuration (neutral
 // transliteration, "-" separator, original letter case preserved).
 // It is shorthand for New().Make(t).
+//
+// The result is not URL-canonical - Make("Осінній настрій") is
+// "Osinnii-nastrii". Use MakeURL for a slug that goes into a URL.
 func Make(t string) string {
 	return defaultSlug.Make(t)
+}
+
+// MakeURL returns the URL-canonical (lower-case) slug of t using the default
+// configuration. It is shorthand for New().MakeURL(t).
+func MakeURL(t string) string {
+	return defaultSlug.MakeURL(t)
 }
 
 // Lower is Make with the result lowercased.

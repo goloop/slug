@@ -106,6 +106,76 @@ func TestCase(t *testing.T) {
 	}
 }
 
+// TestMakeURL covers the entry point for slugs that go into a URL: always
+// lower case, whatever the configured default, and unaffected by the
+// transliterated case that trips Make up on non-Latin input.
+func TestMakeURL(t *testing.T) {
+	cases := []struct {
+		name string
+		s    *Slug
+		in   string
+		want string
+	}{
+		{"cyrillic title", New(WithLang(lang.UK)), "Осінній настрій", "osinnii-nastrii"},
+		{"latin title", New(), "Hello World", "hello-world"},
+		{"already lower", New(), "hello world", "hello-world"},
+		{"upper default is overridden", New(WithUppercase()), "Hello World", "hello-world"},
+		{"lower default agrees", New(WithLowercase()), "Hello World", "hello-world"},
+		{"separator is honoured", New(WithSeparator("_")), "Hello World", "hello_world"},
+		{"fallback still applies", New(WithFallback("Post")), "!!!", "post"},
+		{"empty stays empty", New(), "", ""},
+	}
+
+	for _, c := range cases {
+		t.Run(c.name, func(t *testing.T) {
+			if got := c.s.MakeURL(c.in); got != c.want {
+				t.Errorf("MakeURL(%q) = %q, want %q", c.in, got, c.want)
+			}
+		})
+	}
+
+	// The case Make preserves is exactly what MakeURL exists to remove.
+	s := New(WithLang(lang.UK))
+	if got := s.Make("Осінній настрій"); got != "Osinnii-nastrii" {
+		t.Errorf("Make = %q, want %q - the premise of MakeURL", got, "Osinnii-nastrii")
+	}
+
+	// A URL slug fed back in must survive unchanged: canonical means stable.
+	for _, in := range []string{"Осінній настрій", "Hello World", "R&D 100%"} {
+		once := MakeURL(in)
+		if twice := MakeURL(once); twice != once {
+			t.Errorf("MakeURL is not idempotent on %q: %q then %q", in, once, twice)
+		}
+		if !IsValid(once) && once != "" {
+			t.Errorf("MakeURL(%q) = %q is not a canonical slug", in, once)
+		}
+	}
+}
+
+// TestFallbackFollowsCase pins the fallback to the case the caller asked for.
+// It is stored as Make renders it, so without an explicit pass a capitalised
+// fallback would escape Lower, Upper and MakeURL - and put a capital letter
+// into a URL by the one path that was supposed to be safe.
+func TestFallbackFollowsCase(t *testing.T) {
+	for _, s := range []*Slug{
+		New(WithFallback("Post")),
+		New(WithFallback("Post"), WithMaxLength(10)), // the assemble path
+	} {
+		if got := s.MakeURL("!!!"); got != "post" {
+			t.Errorf("MakeURL fallback = %q, want %q", got, "post")
+		}
+		if got := s.Lower("!!!"); got != "post" {
+			t.Errorf("Lower fallback = %q, want %q", got, "post")
+		}
+		if got := s.Upper("!!!"); got != "POST" {
+			t.Errorf("Upper fallback = %q, want %q", got, "POST")
+		}
+		if got := s.Make("!!!"); got != "Post" {
+			t.Errorf("Make fallback = %q, want %q unchanged", got, "Post")
+		}
+	}
+}
+
 // TestFallback confirms the empty-result fallback fires only when needed.
 func TestFallback(t *testing.T) {
 	s := New(WithFallback("post"))

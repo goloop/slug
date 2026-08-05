@@ -16,6 +16,10 @@ func TestPackageParity(t *testing.T) {
 		if Make(in) != s.Make(in) {
 			t.Errorf("Make(%q): package %q != object %q", in, Make(in), s.Make(in))
 		}
+		if MakeURL(in) != s.MakeURL(in) {
+			t.Errorf("MakeURL(%q): package %q != object %q",
+				in, MakeURL(in), s.MakeURL(in))
+		}
 		if Lower(in) != s.Lower(in) {
 			t.Errorf("Lower(%q): package %q != object %q", in, Lower(in), s.Lower(in))
 		}

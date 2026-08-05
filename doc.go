@@ -12,9 +12,24 @@
 // The package functions use a default configuration (neutral
 // transliteration, "-" separator, original letter case preserved):
 //
-//	slug.Make("Hello World")  // "Hello-World"
-//	slug.Lower("Hello World") // "hello-world"
-//	slug.Upper("Hello World") // "HELLO-WORLD"
+//	slug.Make("Hello World")    // "Hello-World"
+//	slug.MakeURL("Hello World") // "hello-world"
+//	slug.Lower("Hello World")   // "hello-world"
+//	slug.Upper("Hello World")   // "HELLO-WORLD"
+//
+// # Slugs that go into a URL
+//
+// Make preserves the case transliteration produced, which for a non-Latin
+// title means a capital letter in the path:
+//
+//	slug.Make("Осінній настрій")    // "Osinnii-nastrii"
+//	slug.MakeURL("Осінній настрій") // "osinnii-nastrii"
+//
+// URL paths compare case-sensitively, so one title must not be able to reach
+// a resource under two spellings. Use MakeURL where the slug becomes part of
+// a URL, or WithLowercase to make lower case the default for every method of
+// a configured Slug - MakeUnique and TryMakeUnique build on Make, so only the
+// option covers them.
 //
 // # Configurable slugs
 //

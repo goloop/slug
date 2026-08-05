@@ -45,6 +45,7 @@ import "github.com/goloop/slug/v2"
 
 ```go
 func Make(t string) string
+func MakeURL(t string) string
 func Lower(t string) string
 func Upper(t string) string
 func IsValid(t string) bool
@@ -56,9 +57,10 @@ func TryMakeUnique(t string, exists func(string) bool, maxTries int) (string, bo
 без мови транслітерації):
 
 ```go
-slug.Make("Hello World")  // "Hello-World"
-slug.Lower("Hello World") // "hello-world"
-slug.Upper("Hello World") // "HELLO-WORLD"
+slug.Make("Hello World")    // "Hello-World"
+slug.MakeURL("Hello World") // "hello-world"
+slug.Lower("Hello World")   // "hello-world"
+slug.Upper("Hello World")   // "HELLO-WORLD"
 ```
 
 ## Тип Slug і опції
@@ -145,6 +147,38 @@ s.Make("Привіт, світ!") // "Pryvit-svit"
 slug.Make("Hello World")  // "Hello-World"
 slug.Lower("Hello World") // "hello-world"
 slug.Upper("Hello World") // "HELLO-WORLD"
+```
+
+### Слаги, що йдуть у URL
+
+`Make` **не** канонічний для URL. Транслітерація ставить велику літеру за
+джерелом, тож нелатинський заголовок повертається з великою літерою всередині:
+
+```go
+slug.Make("Осінній настрій")    // "Osinnii-nastrii"
+slug.MakeURL("Осінній настрій") // "osinnii-nastrii"
+```
+
+Шляхи URL порівнюються з урахуванням регістру, тож один заголовок не має вести
+до ресурсу двома написаннями. `MakeURL` дає той самий результат, що й `Lower`, і
+названий за задачею, а не за операцією - беріть його щоразу, коли слаг стає
+частиною URL.
+
+Для **унікального** URL-слага налаштуйте сам обʼєкт: `MakeUnique` і
+`TryMakeUnique` побудовані на `Make`, тож покриває їх лише опція.
+
+```go
+s := slug.New(slug.WithLowercase())
+s.MakeUnique("Осінній настрій", exists) // "osinnii-nastrii", "osinnii-nastrii-2", ...
+```
+
+Налаштований fallback теж підкоряється запитаному регістру - ввід, який не дає
+нічого, не може протягнути велику літеру повз `MakeURL`:
+
+```go
+s := slug.New(slug.WithFallback("Post"))
+s.Make("!!!")    // "Post"
+s.MakeURL("!!!") // "post"
 ```
 
 ## Унікальність
