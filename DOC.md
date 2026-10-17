@@ -248,3 +248,7 @@ is a safe fallback, not a locale-aware one.
 
 **Cap the length on a boundary.** `WithMaxLength` cuts at a word boundary, so
 slugs stay readable and never end mid-word.
+
+## Release v2.4.1
+
+Limit slug buffer allocation to the requested output length.

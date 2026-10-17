@@ -90,3 +90,7 @@ Contributions are welcome. Please run `go test ./...`, `go vet ./...` and
 ## License
 
 `slug` is released under the MIT License. See [LICENSE](LICENSE).
+
+## Release v2.4.1
+
+Limit slug buffer allocation to the requested output length.

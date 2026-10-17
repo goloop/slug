@@ -197,7 +197,11 @@ func (c config) assemble(tokens []string, mode caseMode) string {
 	for _, t := range tokens {
 		total += len(t)
 	}
-	b.Grow(total + len(c.separator)*(len(tokens)-1))
+	capacity := total + len(c.separator)*(len(tokens)-1)
+	if c.maxLen > 0 {
+		capacity = min(capacity, c.maxLen)
+	}
+	b.Grow(capacity)
 
 	for i, tok := range tokens {
 		need := len(tok)
